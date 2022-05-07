@@ -125,17 +125,21 @@ async function run() {
       const filter = { _id: ObjectId(id) };
       const product = await productCollection.findOne(filter);
       const options = { upsert: true };
-      const updateDoc = {
-        $set: {
-          quantity: parseInt(product.quantity) - 1,
-        },
-      };
-      const result = await productCollection.updateOne(
-        filter,
-        updateDoc,
-        options
-      );
-      res.send(result);
+      if (parseInt(product.quantity) > 0) {
+        const updateDoc = {
+          $set: {
+            quantity: parseInt(product.quantity) - 1,
+          },
+        };
+        const result = await productCollection.updateOne(
+          filter,
+          updateDoc,
+          options
+        );
+        res.send(result);
+      } else {
+        res.send({ success: false, error: "Sold Out" });
+      }
     });
   } finally {
   }
