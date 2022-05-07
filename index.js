@@ -31,7 +31,8 @@ async function run() {
     await client.connect();
     const productCollection = client.db("carManager").collection("inventory");
     console.log("connected to db");
-    //crud codes
+
+    //-------------CRUD operation--------------//
     //load all products
     app.get("/products", async (req, res) => {
       const query = req.query;
@@ -52,13 +53,14 @@ async function run() {
       const result = await productCollection.insertOne(newProduct);
       res.send(result);
     });
+    //delete product
     app.delete("/product/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await productCollection.deleteOne(query);
       res.send(result);
     });
-    //
+    //get single user item
     app.get("/products", async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
