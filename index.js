@@ -23,6 +23,23 @@ const cors = require("cors");
 app.use(cors());
 app.use(express.json());
 
+//jwt token verify
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).send({ message: "Forbidden access" });
+    }
+    console.log("decoded", decoded);
+    req.decoded = decoded;
+    next();
+  });
+}
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ded74.mongodb.net/carManager?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
@@ -64,12 +81,16 @@ async function run() {
       res.send(result);
     });
     //get single user item
-    app.get("/products", async (req, res) => {
+    app.get("/products", verifyJWT, async (req, res) => {
       const email = req.query.email;
-      const query = { email: email };
-      const product = productCollection.find(query);
-      const result = await product.toArray();
-      res.send(result);
+      if (email === decodedEmail) {
+        const query = { email: email };
+        const product = productCollection.find(query);
+        const result = await product.toArray();
+        res.send(result);
+      } else {
+        res.status(403).send({ message: "forbidden access" });
+      }
     });
     //create jwt
     app.post("/login", async (req, res) => {
@@ -78,6 +99,43 @@ async function run() {
         expiresIn: "1d",
       });
       res.send({ accessToken });
+    });
+    //update
+    app.put("/product/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedQuantity = req.body;
+      const filter = { _id: ObjectId(id) };
+      const product = await productCollection.findOne(filter);
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          quantity:
+            parseInt(updatedQuantity.quantity) + parseInt(product.quantity),
+        },
+      };
+      const result = await productCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+    app.put("/order/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const product = await productCollection.findOne(filter);
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          quantity: parseInt(product.quantity) - 1,
+        },
+      };
+      const result = await productCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
     });
   } finally {
   }
