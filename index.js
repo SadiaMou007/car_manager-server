@@ -136,7 +136,8 @@ async function run() {
           updateDoc,
           options
         );
-        res.send(result);
+        // res.send(result);
+        res.send({ success: true, data: result });
       } else {
         res.send({ success: false, error: "Sold Out" });
       }
