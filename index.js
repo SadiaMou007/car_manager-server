@@ -1,21 +1,24 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
+const jwt = require("jsonwebtoken");
+
 const app = express();
 const port = process.env.PORT || 5000;
 require("dotenv").config();
 
-//user=carManager
-//pass=dMmx74YFO7Dp3vwf
-
-//middle wire
 /**
- * https://i.ibb.co/rFq6rk8/BMW.jpg
+user=carManager
+pass=dMmx74YFO7Dp3vwf
+ 
+https://i.ibb.co/rFq6rk8/BMW.jpg
 https://i.ibb.co/pRHRc5q/Chevrolet.jpg
 https://i.ibb.co/zbC2XXW/Ford.jpg
 https://i.ibb.co/C065xTF/Honda.jpg
 https://i.ibb.co/SNsdJRM/Porsche.jpg
 https://i.ibb.co/BC6c9Rj/Toyota.jpg
  */
+
+//middle wire
 const cors = require("cors");
 app.use(cors());
 app.use(express.json());
@@ -67,6 +70,14 @@ async function run() {
       const product = productCollection.find(query);
       const result = await product.toArray();
       res.send(result);
+    });
+    //create jwt
+    app.post("/login", async (req, res) => {
+      const user = req.body;
+      const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1d",
+      });
+      res.send({ accessToken });
     });
   } finally {
   }
