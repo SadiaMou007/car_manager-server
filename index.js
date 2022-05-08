@@ -34,7 +34,6 @@ function verifyJWT(req, res, next) {
     if (err) {
       return res.status(403).send({ message: "Forbidden access" });
     }
-    console.log("decoded", decoded);
     req.decoded = decoded;
     next();
   });
@@ -125,7 +124,7 @@ async function run() {
       const filter = { _id: ObjectId(id) };
       const product = await productCollection.findOne(filter);
       const options = { upsert: true };
-      if (parseInt(product.quantity) > 0) {
+      if (parseInt(product.quantity) >= 1) {
         const updateDoc = {
           $set: {
             quantity: parseInt(product.quantity) - 1,
