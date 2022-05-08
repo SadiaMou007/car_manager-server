@@ -80,9 +80,11 @@ async function run() {
       res.send(result);
     });
     //get single user item
-    app.get("/products", verifyJWT, async (req, res) => {
+    app.get("/products/:email", verifyJWT, async (req, res) => {
       const email = req.query.email;
-      if (email === decodedEmail) {
+      console.log(email);
+      console.log(decodedEmail);
+      if (email == decodedEmail) {
         const query = { email: email };
         const product = productCollection.find(query);
         const result = await product.toArray();
