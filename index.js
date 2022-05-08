@@ -79,11 +79,10 @@ async function run() {
       const result = await productCollection.deleteOne(query);
       res.send(result);
     });
+
     //get single user item
-    app.get("/products/:email", verifyJWT, async (req, res) => {
+    app.get("/products", verifyJWT, async (req, res) => {
       const email = req.query.email;
-      console.log(email);
-      console.log(decodedEmail);
       if (email == decodedEmail) {
         const query = { email: email };
         const product = productCollection.find(query);
@@ -93,6 +92,7 @@ async function run() {
         res.status(403).send({ message: "forbidden access" });
       }
     });
+
     //create jwt
     app.post("/login", async (req, res) => {
       const user = req.body;
@@ -101,7 +101,8 @@ async function run() {
       });
       res.send({ accessToken });
     });
-    //update
+
+    //increase quantity
     app.put("/product/:id", async (req, res) => {
       const id = req.params.id;
       const updatedQuantity = req.body;
@@ -121,6 +122,8 @@ async function run() {
       );
       res.send(result);
     });
+
+    //decrease quantity
     app.put("/order/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: ObjectId(id) };
